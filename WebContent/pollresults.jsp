@@ -3,18 +3,19 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-	<head>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
-		<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-		<title>${pollData.getName()} Results</title>
-		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
+   <head>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+	<title>${pollData.getName()} Results</title>
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    	<script type="text/javascript">
     
-    var loc = "http://localhost:8080/CSCI201_ProPoll_Project/PollResults?pollName=${pollName}"
+    	var loc = "http://localhost:8080/CSCI201_ProPoll_Project/PollResults?pollName=${pollName}"
  	if (window.location.href.substring(46,57)!="PollResults"){
-    	window.location.replace("/CSCI201_ProPoll_Project/PollResults?pollName=${pollName}");
+    		window.location.replace("/CSCI201_ProPoll_Project/PollResults?pollName=${pollName}");
  	}
-    var socket;
+	// Connecting to the server through web socket
+    	var socket;
 	function connectToServer() {
 		socket = new WebSocket("ws://localhost:8080/CSCI201_ProPoll_Project/ws");
 		socket.onopen = function(event) {
@@ -43,33 +44,31 @@
 	}
 
     
-    
-    var w;
-
+    //Implement web worker to call demo_workers to count the length of time user has enterred the page
+    //Meet the multi-threading requirements
+    var webWorker;
+		
     function startWorker() {
         if(typeof(Worker) !== "undefined") {
-            if(typeof(w) == "undefined") {
-                w = new Worker("demo_workers.js");
+            if(typeof(webWorker) == "undefined") {
+                webWorker = new Worker("demo_workers.js");
             }
-            w.onmessage = function(event) {
+            webWorker.onmessage = function(event) {
                 document.getElementById("result").innerHTML = event.data;
-                
-           
-              
             };
         } else {
             document.getElementById("result").innerHTML = "Sorry! No Web Worker support.";
         }
     }
-
+    //Terminate the web worker
     function stopWorker() { 
-        w.terminate();
-        w = undefined;
-       
-       
+        webWorker.terminate();
+        webWorker = undefined;
     }
     
     startWorker();
+		
+    // Rendering the charts to visualize the poll results 
     </script>
 	<c:forEach var="i" begin="0" end="${pollData.size()-1 }">
 	<script>
@@ -85,10 +84,7 @@
       
       function drawChart() {
     	  resultArray = [];
-    	  
-
-    
-    		  
+   
     	resultArray = [];
     		  
     	  
@@ -101,8 +97,6 @@
     	console.log(questionSize);
     	var j;
     	var count = 0;
-    	
-    	
 
     	var res1  = '${pollData.getQuestion(i).getResponseString(i)}';
     	var res1Num1 = parseInt('${pollData.getQuestion(i).getResponseCount(0)}');
@@ -241,23 +235,6 @@
 
 
 	<div id="disqus_thread"></div>
-	<script>
-		/**
-		 *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-		 *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
-
-		var disqus_config = function() {
-			this.page.url = 'http://example.com'; // Replace PAGE_URL with your page's canonical URL variable
-			// this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-		};
-
-		(function() { // DON'T EDIT BELOW THIS LINE
-			var d = document, s = d.createElement('script');
-			s.src = 'https://pollpro.disqus.com/embed.js';
-			s.setAttribute('data-timestamp', +new Date());
-			(d.head || d.body).appendChild(s);
-		})();
-	</script>
 	<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 	</body>
 </html>
